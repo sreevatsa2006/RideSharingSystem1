@@ -1,0 +1,5 @@
+package com.ridesharing.backend.model;
+
+public class User {
+
+}
