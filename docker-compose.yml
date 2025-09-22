@@ -1,0 +1,50 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:17
+    container_name: ridesharing-db
+    environment:
+      POSTGRES_DB: Ridesharing_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "5432:5432"
+
+  backend:
+    build:
+      context: ./Backend/ridesharing-backend
+      dockerfile: Dockerfile
+    container_name: ridesharing-backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/appdb
+      SPRING_DATASOURCE_USERNAME: appuser
+      SPRING_DATASOURCE_PASSWORD: apppass
+      SERVER_PORT: 8080
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8085:8080" # host:container, backend now at http://localhost:8085
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: ridesharing-frontend
+    depends_on:
+      - backend
+    ports:
+      - "8086:80" # host:container, frontend now at http://localhost:8086
+    restart: unless-stopped
+
+volumes:
+  db_data: {}

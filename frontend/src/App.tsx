@@ -18,6 +18,7 @@ function App() {
   const handleLogin = () => setAuthPage('app');
   const handleSignup = () => setAuthPage('signup');
   const handleSignupSuccess = () => setAuthPage('login');
+  const handleLogout = () => setAuthPage('login');
 
   const renderPage = () => {
     switch (currentPage) {
@@ -26,7 +27,7 @@ function App() {
       case 'booking':
         return <Booking onNavigate={setCurrentPage} onSelectDriver={setSelectedDriver} />;
       case 'profile':
-        return <Profile onNavigate={setCurrentPage} />;
+        return <Profile onNavigate={setCurrentPage} onLogout={handleLogout} />;
       case 'driver-details':
         return <DriverDetails driver={selectedDriver} onNavigate={setCurrentPage} />;
       case 'offers':

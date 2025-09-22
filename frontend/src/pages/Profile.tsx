@@ -3,9 +3,10 @@ import { User, Star, MapPin, Phone, Mail, Edit, Camera, Award, Clock, Car } from
 
 interface ProfileProps {
   onNavigate: (page: string) => void;
+  onLogout: () => void;
 }
 
-const Profile: React.FC<ProfileProps> = ({ onNavigate }) => {
+const Profile: React.FC<ProfileProps> = ({ onNavigate, onLogout }) => {
 
   const [activeTab, setActiveTab] = useState('profile');
   // Profile state
@@ -14,11 +15,14 @@ const Profile: React.FC<ProfileProps> = ({ onNavigate }) => {
   const [email, setEmail] = useState('amit.sharma@email.com');
   const [phone, setPhone] = useState('+91 98765 43210');
   const [address, setAddress] = useState('123 Main Street, Bandra West, Mumbai, Maharashtra 400050');
+  const [profilePhoto, setProfilePhoto] = useState('https://ui-avatars.com/api/?name=&background=cccccc&color=555555&size=128'); // nill/default
   // For header display
   const [headerName, setHeaderName] = useState('Amit Sharma');
   const [headerEmail, setHeaderEmail] = useState('amit.sharma@email.com');
   const [headerPhone, setHeaderPhone] = useState('+91 99999 99999');
   const [headerAddress, setHeaderAddress] = useState('Mumbai, Maharashtra');
+  const [headerPhoto, setHeaderPhoto] = useState(profilePhoto);
+  const [showSaved, setShowSaved] = useState(false);
 
   const userStats = [
     { label: 'Total Rides', value: '47', icon: Car },
@@ -33,14 +37,23 @@ const Profile: React.FC<ProfileProps> = ({ onNavigate }) => {
     setHeaderEmail(email);
     setHeaderPhone(phone);
     setHeaderAddress(address.split(',')[1]?.trim() ? address.split(',')[1].trim() : address);
+    setHeaderPhoto(profilePhoto);
+    setShowSaved(true);
+    setFirstName('');
+    setLastName('');
+    setEmail('');
+    setPhone('');
+    setAddress('');
+    setProfilePhoto('https://ui-avatars.com/api/?name=&background=cccccc&color=555555&size=128');
+    setTimeout(() => setShowSaved(false), 2000);
   };
 
   const handleLogout = () => {
     if (window.confirm('Are you sure to logout? If you logout, you have to sign in again.')) {
       // Clear user session (e.g., localStorage, cookies, etc.)
       localStorage.clear();
-      // Redirect to login page
-      onNavigate('login');
+      // Call the logout handler from App
+      onLogout();
     }
   };
 
@@ -50,12 +63,32 @@ const Profile: React.FC<ProfileProps> = ({ onNavigate }) => {
       <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
         <div className="flex items-center gap-6">
           <div className="relative">
-            
-            <button className="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition-colors">
+            <img
+              src={headerPhoto}
+              alt="Profile"
+              className="w-24 h-24 rounded-full object-cover border-2 border-gray-300"
+            />
+            <input
+              type="file"
+              accept="image/*"
+              id="profile-photo-upload"
+              style={{ display: 'none' }}
+              onChange={e => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  const reader = new FileReader();
+                  reader.onload = () => setProfilePhoto(reader.result as string);
+                  reader.readAsDataURL(file);
+                }
+              }}
+            />
+            <button
+              className="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition-colors"
+              onClick={() => document.getElementById('profile-photo-upload')?.click()}
+            >
               <Camera className="h-4 w-4" />
             </button>
           </div>
-          
           <div className="flex-1">
             <div className="flex items-center justify-between mb-2">
               <h1 className="text-2xl font-bold text-gray-900">{headerName}</h1>
@@ -98,6 +131,10 @@ const Profile: React.FC<ProfileProps> = ({ onNavigate }) => {
         })}
       </div>
 
+      {/* Popup message for saved changes */}
+      {showSaved && (
+        <div className="fixed top-8 right-8 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50 transition-all">Changes saved</div>
+      )}
       {/* Tab Navigation */}
       <div className="bg-white rounded-xl shadow-lg overflow-hidden">
         <div className="border-b border-gray-200">
